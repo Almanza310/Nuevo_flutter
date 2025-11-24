@@ -1,6 +1,18 @@
-# random_user_lab
+# Random User Lab
 
-A new Flutter project.
+A Flutter application that displays user profiles with static data. The app allows you to cycle through multiple user profiles.
+
+## Features
+
+- Display user profiles with:
+  - Profile picture
+  - Full name
+  - Email
+  - Phone number
+  - City
+  - Country
+- Cycle through multiple profiles using a button
+- Support for static profile data
 
 ## Getting Started
 
@@ -15,3 +27,15 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Project Structure
+
+- `lib/main.dart` - Main application code with UI and profile management
+- `lib/random_user.dart` - User model class
+- `assets/images/` - Profile images
+
+## Setup
+
+1. Clone the repository
+2. Run `flutter pub get` to install dependencies
+3. Run `flutter run` to start the application
