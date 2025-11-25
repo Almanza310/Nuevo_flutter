@@ -33,64 +33,40 @@ class RandomUserPage extends StatefulWidget {
 }
 
 class _RandomUserPageState extends State<RandomUserPage> {
-  // Future que usará el FutureBuilder para saber cuando llegan los datos
+  // Future que usará el FutureBuilder para saber cuándo llegan los datos
   late Future<RandomUser> futureUser;
-  int currentProfileIndex = 0; // Índice del perfil actual (0, 1, o 2)
 
   @override
   void initState() {
     super.initState();
-    // Al iniciar la pantalla, se carga el primer perfil
-    futureUser = getProfile(currentProfileIndex);
+    // Al iniciar la pantalla, se llama por primera vez a la API
+    futureUser = fetchRandomUser();
   }
 
-  /// Función que retorna un perfil según el índice (0, 1, o 2)
-  Future<RandomUser> getProfile(int index) async {
-    // Simula una pequeña demora para mantener el FutureBuilder
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Retorna el perfil correspondiente al índice
-    switch (index) {
-      case 0:
-        // Perfil 1 - Juan Almanza
-        return RandomUser(
-          fullName: 'Juan Almanza',
-          email: 'Almanzasalinas123@gmail.com',
-          country: 'Colombia',
-          imageUrl: 'assets/images/profile.jpg',
-          phone: '+57 315 047 0429',
-          city: 'Campoalegre',
-        );
-      case 1:
-        // Perfil 2 - Aquí puedes agregar los datos del segundo perfil
-        return RandomUser(
-          fullName: 'Nombre Perfil 2',
-          email: 'perfil2@ejemplo.com',
-          country: 'Colombia',
-          imageUrl: 'assets/images/profile.jpg', // Puedes agregar otra imagen
-          phone: '+57 300 000 0000',
-          city: 'Ciudad Perfil 2',
-        );
-      case 2:
-        // Perfil 3 - Aquí puedes agregar los datos del tercer perfil
-        return RandomUser(
-          fullName: 'Nombre Perfil 3',
-          email: 'perfil3@ejemplo.com',
-          country: 'Colombia',
-          imageUrl: 'assets/images/profile.jpg', // Puedes agregar otra imagen
-          phone: '+57 300 000 0000',
-          city: 'Ciudad Perfil 3',
-        );
-      default:
-        return getProfile(0);
+  /// Función que consume la API https://randomuser.me/api/
+  /// y devuelve un objeto RandomUser
+  Future<RandomUser> fetchRandomUser() async {
+    const url = 'https://randomuser.me/api/';
+    // 1. Petición GET
+    final response = await http.get(Uri.parse(url));
+    // 2. Verificar código de estado
+    if (response.statusCode == 200) {
+      // 3. Convertir body (String) a Map con jsonDecode
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      // 4. Tomar el primer usuario del arreglo "results"
+      final userJson = data["results"][0];
+      // 5. Convertirlo a nuestro modelo
+      return RandomUser.fromJson(userJson);
+    } else {
+      // Si la respuesta no fue exitosa, se lanza un error
+      throw Exception('Error al cargar el usuario. Código: ${response.statusCode}');
     }
   }
 
-  /// Función para cambiar al siguiente perfil (cicla entre 0, 1, 2)
+  /// Función para volver a cargar un usuario nuevo (se usará en el botón)
   void _loadNewUser() {
     setState(() {
-      currentProfileIndex = (currentProfileIndex + 1) % 3; // Cicla entre 0, 1, 2
-      futureUser = getProfile(currentProfileIndex);
+      futureUser = fetchRandomUser();
     });
   }
 
@@ -153,9 +129,7 @@ class _RandomUserPageState extends State<RandomUserPage> {
                           // Foto de perfil
                           CircleAvatar(
                             radius: 40,
-                            backgroundImage: user.imageUrl.startsWith('http')
-                                ? NetworkImage(user.imageUrl) as ImageProvider
-                                : AssetImage(user.imageUrl) as ImageProvider,
+                            backgroundImage: NetworkImage(user.imageUrl),
                           ),
                           const SizedBox(height: 16),
                           // Nombre completo
@@ -219,11 +193,11 @@ class _RandomUserPageState extends State<RandomUserPage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  // Botón para cambiar entre perfiles
+                  // Botón para pedir un nuevo usuario
                   ElevatedButton.icon(
                     onPressed: _loadNewUser,
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Siguiente perfil'),
+                    label: const Text('Nuevo usuario'),
                   ),
                 ],
               );
